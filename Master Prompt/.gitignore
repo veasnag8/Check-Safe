@@ -1,0 +1,11 @@
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.env
+*.pyc
+*.db
+storage/quarantine/*
+storage/reports/*
+!storage/quarantine/.gitkeep
+!storage/reports/.gitkeep
