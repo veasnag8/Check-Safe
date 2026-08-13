@@ -77,13 +77,30 @@ This repo now supports the Telegram bot directly in the web service through webh
 
 Use [`render.yaml`](./render.yaml) for the web service, then set these env vars on Render:
 
+- `APP_NAME=Telegram Security Scanner`
+- `APP_ENV=production`
+- `LOG_LEVEL=INFO`
 - `TELEGRAM_BOT_TOKEN`
-- `DATABASE_URL`
 - `PUBLIC_BASE_URL` set to your Render URL, for example `https://check-safe.onrender.com`
+- `TELEGRAM_WEBHOOK_PATH=/telegram/webhook`
 - `TELEGRAM_WEBHOOK_SECRET` to any long random string
+- `DATABASE_URL` set to a Render Postgres connection string
+- `VIRUSTOTAL_API_KEY`
+- `GOOGLE_SAFE_BROWSING_API_KEY`
+- `ADMIN_TELEGRAM_IDS` if you want admin commands enabled
+- `ALLOW_EXTERNAL_FILE_UPLOAD=false`
+- `MAX_FILE_SIZE_MB=50`
+- `MAX_ARCHIVE_SIZE_MB=70`
+- `MAX_EXTRACTED_FILES=1000`
+- `MAX_EXTRACTION_SIZE_MB=100`
+- `MAX_ARCHIVE_DEPTH=3`
+- `MAX_SCANS_PER_MINUTE=5`
+- `MAX_SCANS_PER_HOUR=50`
 
 The webhook endpoint is `POST /telegram/webhook`.
 The API service still exposes `/health`.
+
+For convenience, copy the values from [`.env.render.example`](./.env.render.example) and replace the placeholders with your Render secrets.
 
 ## Security notes
 
