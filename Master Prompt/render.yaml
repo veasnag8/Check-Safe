@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: telegram-security-scanner-api
+    env: docker
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+
+  - type: worker
+    name: telegram-security-scanner-bot
+    env: docker
+    plan: starter
+    autoDeploy: true
+    startCommand: python run.py --mode bot

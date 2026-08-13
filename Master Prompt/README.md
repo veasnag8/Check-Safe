@@ -42,6 +42,15 @@ TELEGRAM_BOT_TOKEN=YOUR_TOKEN
 python run.py
 ```
 
+By default, `run.py` starts the API when `PORT` is set, which matches Render's web service runtime.
+
+Explicit modes:
+
+```bash
+python run.py --mode api
+python run.py --mode bot
+```
+
 CLI examples:
 
 ```bash
@@ -60,6 +69,21 @@ pytest
 ```bash
 docker compose up --build
 ```
+
+## Render
+
+This repo supports three deployment shapes:
+
+- API 24/7 as a `web` service
+- Telegram bot 24/7 as a `worker` service
+- Both at the same time as separate Render services
+
+Use [`render.yaml`](./render.yaml) to create:
+
+- `telegram-security-scanner-api` for the FastAPI app
+- `telegram-security-scanner-bot` for the long-running Telegram polling bot
+
+The API service listens on `PORT` and exposes `/health`.
 
 ## Security notes
 
