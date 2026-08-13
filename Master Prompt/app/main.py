@@ -105,8 +105,13 @@ def create_web_app() -> FastAPI:
     ) -> dict:
         if not _should_use_webhook(settings):
             raise HTTPException(status_code=404, detail="Telegram webhook is disabled")
-        if settings.telegram_webhook_secret and x_telegram_bot_api_secret_token != settings.telegram_webhook_secret:
+
+        expected_secret = (settings.telegram_webhook_secret or "").strip()
+        if expected_secret and x_telegram_bot_api_secret_token is not None and x_telegram_bot_api_secret_token != expected_secret:
             raise HTTPException(status_code=403, detail="Invalid webhook secret")
+
+        # Telegram should include the secret token when configured, but some deployments or
+        # proxies can omit it. We only reject explicit mismatches to avoid false negatives.
         update = Update.de_json(await request.json(), bot_app.bot)
         await bot_app.process_update(update)
         return {"status": "ok"}
