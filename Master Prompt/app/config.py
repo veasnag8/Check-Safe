@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     virustotal_api_key: str = Field(default="", alias="VIRUSTOTAL_API_KEY")
     google_safe_browsing_api_key: str = Field(default="", alias="GOOGLE_SAFE_BROWSING_API_KEY")
     admin_telegram_ids: str = Field(default="", alias="ADMIN_TELEGRAM_IDS")
+    public_base_url: str = Field(default="", alias="PUBLIC_BASE_URL")
+    telegram_webhook_path: str = Field(default="/telegram/webhook", alias="TELEGRAM_WEBHOOK_PATH")
+    telegram_webhook_secret: str = Field(default="", alias="TELEGRAM_WEBHOOK_SECRET")
     max_file_size_mb: int = Field(default=20, alias="MAX_FILE_SIZE_MB")
     max_archive_size_mb: int = Field(default=50, alias="MAX_ARCHIVE_SIZE_MB")
     max_extracted_files: int = Field(default=1000, alias="MAX_EXTRACTED_FILES")
@@ -35,4 +38,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

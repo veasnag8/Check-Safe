@@ -43,6 +43,7 @@ python run.py
 ```
 
 By default, `run.py` starts the API when `PORT` is set, which matches Render's web service runtime.
+If `PUBLIC_BASE_URL` is set, the same web service also accepts Telegram webhook updates.
 
 Explicit modes:
 
@@ -72,18 +73,17 @@ docker compose up --build
 
 ## Render
 
-This repo supports three deployment shapes:
+This repo now supports the Telegram bot directly in the web service through webhooks.
 
-- API 24/7 as a `web` service
-- Telegram bot 24/7 as a `worker` service
-- Both at the same time as separate Render services
+Use [`render.yaml`](./render.yaml) for the web service, then set these env vars on Render:
 
-Use [`render.yaml`](./render.yaml) to create:
+- `TELEGRAM_BOT_TOKEN`
+- `DATABASE_URL`
+- `PUBLIC_BASE_URL` set to your Render URL, for example `https://check-safe.onrender.com`
+- `TELEGRAM_WEBHOOK_SECRET` to any long random string
 
-- `telegram-security-scanner-api` for the FastAPI app
-- `telegram-security-scanner-bot` for the long-running Telegram polling bot
-
-The API service listens on `PORT` and exposes `/health`.
+The webhook endpoint is `POST /telegram/webhook`.
+The API service still exposes `/health`.
 
 ## Security notes
 

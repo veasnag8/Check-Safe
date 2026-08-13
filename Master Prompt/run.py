@@ -82,7 +82,7 @@ def main() -> None:
     elif args.mode == "api" or (args.mode == "auto" and os.getenv("PORT")):
         port = int(os.getenv("PORT", "8000"))
         uvicorn.run(
-            "app.api.routes:create_app",
+            "app.main:create_web_app",
             factory=True,
             host="0.0.0.0",
             port=port,

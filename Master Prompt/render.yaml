@@ -5,15 +5,14 @@ services:
     plan: starter
     autoDeploy: true
     healthCheckPath: /health
-
-  - type: worker
-    name: telegram-security-scanner-bot
-    runtime: docker
-    plan: starter
-    autoDeploy: true
-    dockerCommand: python run.py --mode bot
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: DATABASE_URL
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: TELEGRAM_WEBHOOK_PATH
+        value: /telegram/webhook
+      - key: TELEGRAM_WEBHOOK_SECRET
         sync: false

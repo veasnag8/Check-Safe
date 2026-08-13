@@ -4,7 +4,7 @@ import asyncio
 import logging
 from contextlib import suppress
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, Request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -56,6 +56,62 @@ async def _on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def create_api() -> FastAPI:
     return create_app()
+
+
+def _telegram_webhook_url() -> str:
+    settings = get_settings()
+    base_url = settings.public_base_url.rstrip("/")
+    path = settings.telegram_webhook_path if settings.telegram_webhook_path.startswith("/") else f"/{settings.telegram_webhook_path}"
+    return f"{base_url}{path}"
+
+
+def _should_use_webhook(settings) -> bool:
+    return bool(settings.public_base_url.strip() and settings.telegram_bot_token.strip())
+
+
+def create_web_app() -> FastAPI:
+    settings = get_settings()
+    app = create_app()
+    bot_app = create_bot_application()
+
+    @app.on_event("startup")
+    async def _startup() -> None:
+        await bot_app.initialize()
+        if _should_use_webhook(settings):
+            await bot_app.bot.set_webhook(
+                url=_telegram_webhook_url(),
+                allowed_updates=Update.ALL_TYPES,
+                secret_token=settings.telegram_webhook_secret or None,
+                drop_pending_updates=True,
+            )
+            await bot_app.start()
+            logger.info("Telegram webhook configured at %s", _telegram_webhook_url())
+        else:
+            logger.warning("PUBLIC_BASE_URL is not set; Telegram webhook is disabled")
+
+    @app.on_event("shutdown")
+    async def _shutdown() -> None:
+        with suppress(Exception):
+            await bot_app.bot.delete_webhook(drop_pending_updates=True)
+        with suppress(Exception):
+            await bot_app.stop()
+        with suppress(Exception):
+            await bot_app.shutdown()
+
+    @app.post(settings.telegram_webhook_path)
+    async def telegram_webhook(
+        request: Request,
+        x_telegram_bot_api_secret_token: str | None = Header(default=None, alias="X-Telegram-Bot-Api-Secret-Token"),
+    ) -> dict:
+        if not _should_use_webhook(settings):
+            raise HTTPException(status_code=404, detail="Telegram webhook is disabled")
+        if settings.telegram_webhook_secret and x_telegram_bot_api_secret_token != settings.telegram_webhook_secret:
+            raise HTTPException(status_code=403, detail="Invalid webhook secret")
+        update = Update.de_json(await request.json(), bot_app.bot)
+        await bot_app.process_update(update)
+        return {"status": "ok"}
+
+    return app
 
 
 def main() -> None:
