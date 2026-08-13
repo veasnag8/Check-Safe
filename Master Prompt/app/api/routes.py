@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.responses import Response
 
 from app.config import get_settings
 
@@ -8,6 +9,15 @@ from app.config import get_settings
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title=settings.app_name)
+
+    @app.get("/favicon.ico")
+    async def favicon() -> Response:
+        # Return a tiny inline SVG as the favicon to avoid 404 noise from browsers
+        svg = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">'
+            '<rect width="16" height="16" fill="#0b74de"/></svg>'
+        )
+        return Response(content=svg, media_type="image/svg+xml")
 
     @app.get("/")
     async def root() -> dict:
