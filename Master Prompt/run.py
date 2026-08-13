@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import os
 from pathlib import Path
 
 from app.config import get_settings
@@ -13,6 +14,7 @@ from app.services.safe_browsing import SafeBrowsingService
 from app.services.virustotal import VirusTotalService
 from app.utils.formatting import format_scan_summary
 from app.utils.logging_config import configure_logging
+import uvicorn
 
 
 async def _cli_url(url: str) -> None:
@@ -68,6 +70,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url")
     parser.add_argument("--file")
+    parser.add_argument("--mode", choices=("auto", "bot", "api"), default="auto")
     args = parser.parse_args()
     settings = get_settings()
     configure_logging(settings.log_level)
@@ -76,6 +79,15 @@ def main() -> None:
         asyncio.run(_cli_url(args.url))
     elif args.file:
         asyncio.run(_cli_file(args.file))
+    elif args.mode == "api" or (args.mode == "auto" and os.getenv("PORT")):
+        port = int(os.getenv("PORT", "8000"))
+        uvicorn.run(
+            "app.api.routes:create_app",
+            factory=True,
+            host="0.0.0.0",
+            port=port,
+            log_level=settings.log_level.lower(),
+        )
     else:
         from app.main import main as app_main
         app_main()
